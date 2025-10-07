@@ -1,0 +1,61 @@
+{
+  "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v11/terminal-keeper.json",
+  "theme": "tribe",
+  "active": "default",
+  "activateOnStartup": true,
+  "keepExistingTerminals": false,
+  "sessions": {
+    "default": [
+      {
+        "name": "hello",
+        "autoExecuteCommands": true,
+        "joinOperator": ";",
+        "icon": "person",
+        "color": "terminal.ansiGreen",
+        "commands": [
+          "echo  Hello, i'm your friendly computer beep boop beep."
+        ]
+      },
+      [
+        {
+          "name": "[Client] Vite",
+          "autoExecuteCommands": true,
+          "joinOperator": ";",
+          "icon": "device-desktop",
+          "color": "terminal.ansiBlue",
+          "commands": [
+            "npm run dev"
+          ]
+        },
+        {
+          "name": "[Server] Backend (PHP Artisan Server)",
+          "autoExecuteCommands": true,
+          "joinOperator": ";",
+          "icon": "server-process",
+          "color": "terminal.ansiRed",
+          "commands": [
+            "php artisan serve"
+          ]
+        }
+      ],
+      {
+        "name": "Terminal",
+        "autoExecuteCommands": true,
+        "joinOperator": ";",
+        "icon": "server-process",
+        "color": "terminal.ansiGreen",
+        "commands": [
+          "echo Ready!!!"
+        ]
+      }
+    ],
+    "saved-session": [
+      {
+        "name": "connect",
+        "commands": [
+          ""
+        ]
+      }
+    ]
+  }
+}
