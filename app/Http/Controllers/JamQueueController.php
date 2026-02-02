@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ExternalServices;
+use App\Http\Controllers\Traits\JsonResponses;
 use App\Models\Jam;
 use App\Models\JamQueue;
 use App\Http\Requests\StoreJamQueueRequest;
@@ -14,6 +14,8 @@ use Illuminate\Http\RedirectResponse;
 
 class JamQueueController extends Controller
 {
+    use JsonResponses;
+
     public function store(StoreJamQueueRequest $request, Jam $jam): JsonResponse|RedirectResponse
     {
         $this->authorize('addToQueue', $jam);
@@ -96,21 +98,18 @@ class JamQueueController extends Controller
         $this->authorize('update', $jam);
 
         $service = $manager->resolve('spotify');
-        $hostToken = $jam->creator->getAccessTokenFor(ExternalServices::SPOTIFY);
+        $hostToken = $jam->getHostSpotifyToken();
 
         if (!$hostToken) {
-            return response()->json(['error' => 'Host Spotify not connected'], 400);
+            return $this->errorResponse('Host Spotify not connected');
         }
 
         $result = $service->addToQueue($queueItem->spotify_uri, $hostToken, $request->device_id);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'error' => $result['error'] ?? 'Failed to add to Spotify queue',
-            ], $result['status'] ?? 400);
+            return $this->errorResponse($result['error'] ?? 'Failed to add to Spotify queue', $result['status'] ?? 400);
         }
 
-        return response()->json(['success' => true]);
+        return $this->successResponse();
     }
 }
