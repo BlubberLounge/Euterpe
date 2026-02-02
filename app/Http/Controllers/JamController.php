@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ExternalServices;
 use App\Enums\JamRole;
+use App\Http\Controllers\Traits\JsonResponses;
 use App\Models\Jam;
 use App\Http\Requests\StoreJamRequest;
 use App\Http\Requests\UpdateJamRequest;
@@ -16,6 +17,8 @@ use Illuminate\Http\JsonResponse;
 
 class JamController extends Controller
 {
+    use JsonResponses;
+
     public function index(): View
     {
         $user = Auth::user();
@@ -68,12 +71,12 @@ class JamController extends Controller
         $user = Auth::user();
         $isHost = $jam->isHost($user);
 
-        $jam->load(['queueItems.addedBy', 'users', 'currentTrack']);
+        $jam->load(['queueItems.addedBy', 'users', 'currentTrack', 'creator.externalAccounts']);
 
         $data = [
             'jam' => $jam,
             'isHost' => $isHost,
-            'upcomingTracks' => $jam->upcomingTracks()->with('addedBy')->get(),
+            'upcomingTracks' => $jam->queueItems->whereNull('played_at')->sortBy('position'),
             'currentTrack' => $jam->currentTrack,
         ];
 
@@ -173,10 +176,10 @@ class JamController extends Controller
         ]);
 
         $service = $manager->resolve('spotify');
-        $hostToken = $jam->creator->getAccessTokenFor(ExternalServices::SPOTIFY);
+        $hostToken = $jam->getHostSpotifyToken();
 
         if (!$hostToken) {
-            return response()->json(['error' => 'Host Spotify not connected'], 400);
+            return $this->errorResponse('Host Spotify not connected');
         }
 
         $searchType = $request->input('type', 'all');
@@ -201,10 +204,10 @@ class JamController extends Controller
         $this->authorize('view', $jam);
 
         $service = $manager->resolve('spotify');
-        $hostToken = $jam->creator->getAccessTokenFor(ExternalServices::SPOTIFY);
+        $hostToken = $jam->getHostSpotifyToken();
 
         if (!$hostToken) {
-            return response()->json(['error' => 'Host Spotify not connected'], 400);
+            return $this->errorResponse('Host Spotify not connected');
         }
 
         $tracks = $service->getArtistTopTracks($artistId, $hostToken);

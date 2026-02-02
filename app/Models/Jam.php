@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ExternalServices;
 use App\Enums\JamRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -106,5 +107,12 @@ class Jam extends Model
     public function getNextPosition(): int
     {
         return ($this->queueItems()->max('position') ?? 0) + 1;
+    }
+
+    public function getHostSpotifyToken(): ?string
+    {
+        $this->loadMissing('creator.externalAccounts');
+
+        return $this->creator->getAccessTokenFor(ExternalServices::SPOTIFY);
     }
 }
