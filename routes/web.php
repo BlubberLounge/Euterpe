@@ -7,7 +7,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JamController;
 use App\Http\Controllers\JamQueueController;
 use Illuminate\Support\Facades\Auth;
-use League\CommonMark\Extension\SmartPunct\DashParser;
 
 // Route::get('/', function () {
 //     // return view('welcome');
@@ -28,7 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/music/search', [DashboardController::class, 'search'])->name('music.search');
-    Route::post('/music/queue', [DashboardController::class, 'addToQueue'])->name('music.queue');
+    Route::post('/music/queue', [DashboardController::class, 'queue'])->name('music.queue');
 
     // Jam routes
     Route::get('/jams', [JamController::class, 'index'])->name('jam.index');
