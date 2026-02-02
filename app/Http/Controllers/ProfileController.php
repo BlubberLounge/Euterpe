@@ -18,6 +18,11 @@ class ProfileController extends Controller
     {
         return view('profile.edit', [
             'user' => $request->user(),
+            'linkedServices' => $request->user()
+                ->externalAccounts()
+                ->pluck('service')
+                ->map(fn($s) => $s->value)
+                ->toArray()
         ]);
     }
 

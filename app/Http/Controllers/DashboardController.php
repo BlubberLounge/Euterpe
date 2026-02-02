@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ExternalServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Services\Music\MusicServiceManager;
 
 class DashboardController extends Controller
 {
@@ -58,11 +60,45 @@ class DashboardController extends Controller
 
     public function dashboard()
     {
-        $response = Http::withToken(Auth::user()->access_token)
-            ->get('https://api.spotify.com/v1/me/player/queue');
+        return view('dashboard');
+    }
 
-        $data = $response->json();
+    public function search(Request $request, MusicServiceManager $manager)
+    {
+        $request->validate([
+            'service' => 'required|string|in:spotify,soundcloud',
+            'q' => 'required|string'
+        ]);
 
-        return view('dashboard', $data);
+        $user = $request->user();
+        $service = $manager->resolve($request->service);
+
+        $account = $user->externalServiceUsers()
+            ->where('service', $request->service)
+            ->firstOrFail();
+
+        $token = $service->ensureValidAccessToken($account);
+        $tracks = $service->searchTracks($request->q, $token);
+
+        return response()->json($tracks);
+    }
+
+    public function queue(Request $request, MusicServiceManager $manager)
+    {
+        $request->validate([
+            'service' => 'required|string|in:spotify,soundcloud',
+            'uri' => 'required|string'
+        ]);
+
+        $user = $request->user();
+        $service = $manager->resolve($request->service);
+        $account = $user->externalServiceUsers()
+            ->where('service', $request->service)
+            ->firstOrFail();
+
+        $token = $service->ensureValidAccessToken($account);
+        $service->addToQueue($request->uri, $token);
+
+        return response()->json(['status' => 'queued']);
     }
 }
